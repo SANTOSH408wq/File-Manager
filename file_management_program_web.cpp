@@ -6,12 +6,19 @@
 #include <string>
 #include <vector>
 
+
+// Get a handle to the standard output console.
+
+
 void pauseConsole() {
-  std::cout << "\nPress Enter to continue...";
-  std::cin.clear();
-  std::string temp;
-  std::getline(std::cin, temp);
+    std::cout << "\nPress Enter to continue...";
+    std::cin.clear();
+    std::string temp;
+    std::getline(std::cin, temp);
 }
+
+// Function to get a validated filename from the user.
+// It automatically appends a ".txt" extension if none is provided.
 std::string getValidatedFilename() {
   std::string filename;
   std::cout << "Enter filename ";
@@ -22,17 +29,17 @@ std::string getValidatedFilename() {
 
   if (filename.find('.') == std::string::npos) {
     filename += ".txt";
-    std::cout << "\033[91m";
+    std::cout << "\033[31m";
     std::cout << "No extension specified, automatically using .txt.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
   }
 
   return filename;
 }
 
+// Function to list files in the current directory and allow navigation.
 void listAndNavigateFiles() {
-  std::cout << "\033[2J\033[1;1H";
+  std::cout << "\033[2J\033[1;1H"; // Clears the console screen.
   std::cout << "\033[33m";
   std::cout << "--- File & Directory Navigation ---\n";
   std::cout << "\033[0m";
@@ -42,29 +49,26 @@ void listAndNavigateFiles() {
   std::cout << "\033[0m";
 
   try {
-    std::cout << "\033[93m";
+    std::cout << "\033[33m";
     std::cout << "Contents:\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
+    // Iterates through the current directory and prints its contents.
     for (const auto &entry : std::filesystem::directory_iterator(".")) {
       if (std::filesystem::is_directory(entry.path())) {
         std::cout << "\033[32m";
         std::cout << "  [DIR] " << entry.path().filename().string() << "/\n";
-        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                              FOREGROUND_GREEN);
+        std::cout << "\033[0m";
       } else {
         std::cout << "\033[33m";
         std::cout << "  [FILE] " << entry.path().filename().string() << "\n";
-        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                              FOREGROUND_GREEN);
+        std::cout << "\033[0m";
       }
     }
   } catch (const std::filesystem::filesystem_error &e) {
     std::cout << "\033[31m";
     std::cerr << "Error listing directory: " << e.what() << "\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
-    pauseConsole();
+    std::cout << "\033[0m";
+    pauseConsole(); // Pauses execution until a key is pressed.
     return;
   }
 
@@ -82,21 +86,23 @@ void listAndNavigateFiles() {
 
   if (!newPath.empty()) {
     try {
-      std::filesystem::current_path(newPath);
+      std::filesystem::current_path(
+          newPath); // Changes the current working directory.
       std::cout << "Changed directory to: ";
       std::cout << "\033[32m";
       std::cout << std::filesystem::current_path() << "\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
     } catch (const std::filesystem::filesystem_error &e) {
       std::cout << "\033[31m";
       std::cerr << "Error changing directory: " << e.what() << "\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
     }
   }
   pauseConsole();
 }
+
+// Function to search for specific content within files in the current
+// directory.
 void searchForContent() {
   std::cout << "\033[2J\033[1;1H";
   std::cout << "\033[33m";
@@ -114,6 +120,7 @@ void searchForContent() {
   }
 
   bool found = false;
+  // Iterates through all files in the current directory.
   for (const auto &entry : std::filesystem::directory_iterator(".")) {
     if (entry.is_regular_file()) {
       std::ifstream inputFile(entry.path());
@@ -126,21 +133,17 @@ void searchForContent() {
             if (!found) {
               std::cout << "\033[36m";
               std::cout << "\nFound matches:\n";
-              SetConsoleTextAttribute(hConsole, FOREGROUND_RED |
-                                                    FOREGROUND_BLUE |
-                                                    FOREGROUND_GREEN);
+              std::cout << "\033[0m";
               found = true;
             }
             std::cout << "  File: ";
             std::cout << "\033[33m";
             std::cout << entry.path().filename().string();
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                                  FOREGROUND_GREEN);
+            std::cout << "\033[0m";
             std::cout << ", Line " << lineNumber << ": ";
             std::cout << "\033[36m";
             std::cout << line << "\n";
-            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                                  FOREGROUND_GREEN);
+            std::cout << "\033[0m";
           }
           lineNumber++;
         }
@@ -156,12 +159,12 @@ void searchForContent() {
     std::cout << searchTerm;
     std::cout << "\033[31m";
     std::cout << "' were found.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
   }
   pauseConsole();
 }
 
+// Function to create a new file and save content entered by the user.
 void createAndSaveFile() {
   std::cout << "\033[2J\033[1;1H";
   std::string filename = getValidatedFilename();
@@ -173,8 +176,7 @@ void createAndSaveFile() {
     std::cout << "\033[33m";
     std::cout << filename;
     std::cout << "'.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     pauseConsole();
     return;
   }
@@ -189,10 +191,11 @@ void createAndSaveFile() {
                "Enter to save";
   std::cout << "\033[0m";
   std::cout << ".\n";
-  outputFile << std::cin.rdbuf();
+  outputFile << std::cin.rdbuf(); // Reads content from standard input and
+                                  // writes to the file.
   outputFile.close();
 
-  std::cin.clear();
+  std::cin.clear(); // Clears any error flags on cin.
   std::cout << "\033[32m";
   std::cout << "File '";
   std::cout << "\033[33m";
@@ -203,6 +206,7 @@ void createAndSaveFile() {
   pauseConsole();
 }
 
+// Function to view the contents of an existing file.
 void viewFile() {
   std::cout << "\033[2J\033[1;1H";
   std::string filename = getValidatedFilename();
@@ -215,8 +219,7 @@ void viewFile() {
     std::cout << filename;
     std::cout << "\033[31m";
     std::cout << "' not found. Check the filename and path.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     pauseConsole();
     return;
   }
@@ -228,6 +231,7 @@ void viewFile() {
   std::cout << "' ---\n";
   std::cout << "\033[0m";
   std::string line;
+  // Reads and prints the file content line by line.
   while (std::getline(inputFile, line)) {
     std::cout << line << '\n';
   }
@@ -238,6 +242,8 @@ void viewFile() {
   pauseConsole();
 }
 
+// Function to edit a file with options to append, replace, delete, or insert
+// lines.
 void editFile() {
   std::cout << "\033[2J\033[1;1H";
   std::string filename = getValidatedFilename();
@@ -250,8 +256,7 @@ void editFile() {
     std::cout << filename;
     std::cout << "\033[31m";
     std::cout << "' not found or could not be opened for editing.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     pauseConsole();
     return;
   }
@@ -298,8 +303,7 @@ void editFile() {
     if (!outputFile.is_open()) {
       std::cout << "\033[31m";
       std::cerr << "Error: Could not open file for appending.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       pauseConsole();
       return;
     }
@@ -307,8 +311,7 @@ void editFile() {
     std::cout << "\033[36m";
     std::cout << "Press Ctrl+D (Unix/Linux) or Ctrl+Z/F6 (Windows) followed by "
                  "Enter to save";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     std::cout << ".\n";
     outputFile << std::cin.rdbuf();
     outputFile.close();
@@ -319,8 +322,7 @@ void editFile() {
     std::cout << filename;
     std::cout << "\033[32m";
     std::cout << "' updated successfully.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     break;
   }
   case 2: // Replace
@@ -333,14 +335,12 @@ void editFile() {
     if (lineToEdit < 1 || lineToEdit > lines.size()) {
       std::cout << "\033[31m";
       std::cerr << "Invalid line number. No changes made.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       break;
     }
     std::cout << "\033[36m";
     std::cout << "Enter new content for line " << lineToEdit << ":\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     std::string newLineContent;
     std::getline(std::cin, newLineContent);
     lines[lineToEdit - 1] = newLineContent;
@@ -355,8 +355,7 @@ void editFile() {
     if (lineToDelete < 1 || lineToDelete > lines.size()) {
       std::cout << "\033[31m";
       std::cerr << "Invalid line number. No changes made.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       break;
     }
     lines.erase(lines.begin() + lineToDelete - 1);
@@ -373,28 +372,24 @@ void editFile() {
     if (lineToInsert < 1 || lineToInsert > lines.size() + 1) {
       std::cout << "\033[31m";
       std::cerr << "Invalid line number. No changes made.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       break;
     }
     std::cout << "\033[36m";
     std::cout << "Enter new content to insert:\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     std::string newLineContent;
     std::getline(std::cin, newLineContent);
     lines.insert(lines.begin() + lineToInsert - 1, newLineContent);
     std::cout << "\033[32m";
     std::cout << "Line inserted.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     break;
   }
   default: {
     std::cout << "\033[31m";
     std::cerr << "Invalid choice. No changes made.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     pauseConsole();
     return;
   }
@@ -407,8 +402,7 @@ void editFile() {
     if (!outputFile.is_open()) {
       std::cout << "\033[31m";
       std::cerr << "Error: Could not open file for writing.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       pauseConsole();
       return;
     }
@@ -422,8 +416,7 @@ void editFile() {
     std::cout << filename;
     std::cout << "\033[32m";
     std::cout << "' updated successfully.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
   }
 
   pauseConsole();
@@ -454,20 +447,17 @@ void deleteFile() {
       std::cout << filename;
       std::cout << "\033[32m";
       std::cout << "' deleted successfully.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
     } else {
       std::cout << "\033[31m";
       std::cerr << "Error: Could not delete file. " << ec.message()
                 << std::endl;
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
     }
   } else {
     std::cout << "\033[36m";
     std::cout << "Deletion cancelled.\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
   }
   pauseConsole();
 }
@@ -479,8 +469,7 @@ int main() {
     std::cout << "\033[2J\033[1;1H";
     std::cout << "\033[33m";
     std::cout << "--- File Management Program ---\n";
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                          FOREGROUND_GREEN);
+    std::cout << "\033[0m";
     std::cout << "1. Create/Save a new file\n";
     std::cout << "2. View an existing file\n";
     std::cout << "3. Edit an existing file\n";
@@ -497,8 +486,7 @@ int main() {
       std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cout << "\033[31m";
       std::cerr << "Invalid input. Please enter a number.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       pauseConsole();
       continue;
     }
@@ -527,14 +515,12 @@ int main() {
     case 7:
       std::cout << "\033[36m";
       std::cout << "Exiting program. Goodbye!\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       break;
     default:
       std::cout << "\033[31m";
       std::cerr << "Invalid choice. Please enter a number between 1 and 7.\n";
-      SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE |
-                                            FOREGROUND_GREEN);
+      std::cout << "\033[0m";
       pauseConsole();
       break;
     }
